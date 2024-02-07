@@ -34,8 +34,14 @@ address = 192.168.178.72
 off_when_shutdown = false
 
 [update_manager]
+channel = dev
 refresh_interval = 168
-enable_auto_refresh = True
+
+[update_manager Katapult]
+type = git_repo
+path = ~/katapult
+origin = https://github.com/Arksine/katapult.git
+is_system_service = False
 
 [update_manager mainsail]
 type = web
