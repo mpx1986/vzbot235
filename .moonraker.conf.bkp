@@ -34,9 +34,8 @@ address = 192.168.178.72
 off_when_shutdown = false
 
 [update_manager]
-enable_auto_refresh = True
+enable_auto_refresh = False
 channel = dev
-refresh_interval = 24
 
 [update_manager Katapult]
 type = git_repo
@@ -97,4 +96,13 @@ path = ~/crowsnest
 origin = https://github.com/mainsail-crew/crowsnest.git
 managed_services = crowsnest
 install_script = tools/pkglist.sh
+
+[update_manager KlipperScreen]
+type = git_repo
+path = ~/KlipperScreen
+origin = https://github.com/KlipperScreen/KlipperScreen.git
+virtualenv = ~/.KlipperScreen-env
+requirements = scripts/KlipperScreen-requirements.txt
+system_dependencies = scripts/system-dependencies.json
+managed_services = KlipperScreen
 
