@@ -26,6 +26,10 @@ cors_domains =
 [file_manager]
 enable_object_processing = True
 
+[spoolman]
+server = http://192.168.178.112:7912
+sync_rate = 5
+
 [history]
 
 [power VZBot235]
