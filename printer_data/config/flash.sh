@@ -14,9 +14,9 @@ octopus_flash(){
 	make -s KCONFIG_CONFIG=config.octopus -j4  > /dev/null 2>&1
 	mv ~/klipper/out/klipper.bin octopus_klipper.bin
 	echo -e "\033[1;34m\nStep 3: Flashing Klipper to Octopus.\033[0m"
-	python3 ~/katapult/scripts/flashtool.py -i can0 -u 494fe1b63264 -r
+	python3 ~/katapult/scripts/flashtool.py -i can0 -u 59469bda118c -r
 	sleep 5
-	python3 ~/katapult/scripts/flash_can.py -f ~/klipper/octopus_klipper.bin -d /dev/serial/by-id/usb-Katapult_stm32h723xx_2A003F001951313236343430-if00
+	python3 ~/katapult/scripts/flash_can.py -f ~/klipper/octopus_klipper.bin -d /dev/serial/by-id/stm32h723xx_32001F000F51313531383332-if00
 }
 
 ebb36_flash(){
@@ -25,9 +25,13 @@ ebb36_flash(){
 	make -s KCONFIG_CONFIG=config.ebb36 -j4  > /dev/null 2>&1
 	mv ~/klipper/out/klipper.bin ebb36_klipper.bin
 	echo -e "\033[1;34m\nStep 5: Flashing Klipper to ebb36.\033[0m"
-	python3 ~/katapult/scripts/flash_can.py -f ~/klipper/ebb36_klipper.bin -u cd88c816729d
+	python3 ~/katapult/scripts/flash_can.py -f ~/klipper/ebb36_klipper.bin -u 7923f36815fd
 }
 
+cartographer_flash(){
+	echo -e "\033[1;34m\nStep 9: Flashing Klipper to Cartographer.\033[0m"
+	python3 ~/katapult/scripts/flash_can.py -f ~/cartographer-klipper/firmware/v3/Cartographer_CAN_1000000_8kib_offset.bin -u 7dd159b0a935
+}
 
 power_cycle(){
 	echo -e "\033[1;34m\nCycling power to PSU and boards.\033[0m"
@@ -52,6 +56,10 @@ octopus_flash
 power_cycle
 
 ebb36_flash
+
+power_cycle
+
+cartographer_flash
 
 power_cycle
 
