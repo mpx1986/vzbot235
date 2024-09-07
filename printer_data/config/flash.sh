@@ -28,10 +28,6 @@ ebb36_flash(){
 	python3 ~/katapult/scripts/flash_can.py -f ~/klipper/ebb36_klipper.bin -u 7923f36815fd
 }
 
-cartographer_flash(){
-	echo -e "\033[1;34m\nStep 9: Flashing Klipper to Cartographer.\033[0m"
-	python3 ~/katapult/scripts/flash_can.py -f ~/cartographer-klipper/firmware/v3/Cartographer_CAN_1000000_8kib_offset.bin -u 7dd159b0a935
-}
 
 power_cycle(){
 	echo -e "\033[1;34m\nCycling power to PSU and boards.\033[0m"
