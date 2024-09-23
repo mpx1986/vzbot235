@@ -24,7 +24,8 @@ octopus_flash(){
 	echo -e "\033[1;34m\nStep 3: Flashing Klipper to Octopus.\033[0m"
 	python3 ~/katapult/scripts/flashtool.py -i can0 -u 59469bda118c -r
 	sleep 10
-	python3 ~/katapult/scripts/flash_can.py -f ~/klipper/octopus_klipper.bin -d /dev/serial/by-id/stm32h723xx_32001F000F51313531383332-if00
+	python3 ~/katapult/scripts/flash_can.py -f ~/klipper/octopus_klipper.bin -d /dev/serial/by-id/usb-katapult_stm32h723xx_32001F000F51313531383332-if00
+
 }
 
 power_cycle(){
