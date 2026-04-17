@@ -83,7 +83,14 @@
         ]
       },
       "hardware": {
-        "expected": [],
+        "expected": [
+          "heater_bed",
+          "extruder",
+          "fan",
+          "heater_fan hotend_fan",
+          "led caselight",
+          "filament_switch_sensor RUNOUT"
+        ],
         "last_snapshot": {
           "fans": [
             "controller_fan Octopus",
@@ -118,7 +125,7 @@
             "temperature_sensor cartographer_coil",
             "temperature_sensor Cartographer_MCU"
           ],
-          "timestamp": "2026-04-17T19:22:46Z"
+          "timestamp": "2026-04-17T19:23:00Z"
         },
         "optional": []
       },
@@ -453,7 +460,8 @@
         "bed": "heater_bed",
         "hotend": "extruder"
       },
-      "type": "Custom/Other"
+      "type": "Custom/Other",
+      "wizard_completed": true
     },
     "show_printer_switcher": false
   },
@@ -467,5 +475,6 @@
       }
     }
   },
-  "wifi_expected": false
+  "wifi_expected": false,
+  "wizard_completed": true
 }
