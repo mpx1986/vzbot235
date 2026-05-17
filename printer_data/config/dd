@@ -1,0 +1,639 @@
+[respond]
+[include chopper_tune.cfg]
+#  Octopus Pro boards STM32H723.  Select the appropriate micro-controller in "make
+# menuconfig" and select "Enable low-level configuration options". For
+#  For STM32H723 boards use a "128KiB bootloader" and a "25Mhz crystal"
+# See docs/Config_Reference.md for a description of parameters.
+[exclude_object]
+[include mainsail.cfg]
+#[include config/fan.cfg]
+#[include config/stepper.cfg]
+#[include config/led.cfg]
+[include macros/macro.cfg]
+[include config/therm2-config.cfg]
+[include config/nozzle_cleaner_nvme.cfg]
+#[include config/fs.cfg]
+#[include config/kusba.cfg]
+
+[virtual_sdcard]
+path: ~/printer_data/gcodes
+on_error_gcode: CANCEL_PRINT
+[display_status]
+[pause_resume]
+[respond]   #activate messages
+[gcode_arcs]  #activate round corner
+resolution: 0.1
+[force_move]
+enable_force_move: True
+[gcode_macro FORCE]
+gcode:
+      SET_KINEMATIC_POSITION X=105 Y=94 Z=20
+
+[shaketune]
+result_folder: ~/printer_data/config/ShakeTune_results
+number_of_results_to_keep: 10
+keep_raw_data: False
+show_macros_in_webui: True
+timeout: 60
+measurements_chunk_size: 2
+max_freq: 200
+dpi: 300
+
+[gcode_macro _CLIENT_VARIABLE]
+variable_use_custom_pos   : True ; use custom park coordinates for x,y [True/False]
+variable_custom_park_x    : 15.0   ; custom x position; value must be within your defined min and max of X
+variable_custom_park_y    : 15.0   ; custom y position; value must be within your defined min and max of Y
+variable_custom_park_dz   : 25.0   ; custom dz value; the value in mm to lift the nozzle when move to park position
+variable_retract          : 0.30   ; the value to retract while PAUSE
+variable_cancel_retract   : 0.50   ; the value to retract while CANCEL_PRINT
+variable_speed_retract    : 35.0  ; retract speed in mm/s
+variable_unretract        : 0.60   ; the value to unretract while RESUME
+variable_speed_unretract  : 35.0  ; unretract speed in mm/s
+variable_speed_hop        : 15.0  ; z move speed in mm/s
+variable_speed_move       : 100.0 ; move speed in mm/s
+variable_park_at_cancel   : True ; allow to move the toolhead to park while execute CANCEL_PRINT [True/False]
+variable_park_at_cancel_x : 15  ; different park position during CANCEL_PRINT [None/Position as Float]; park_at_cancel must be True
+variable_park_at_cancel_y : 15  ; different park position during CANCEL_PRINT [None/Position as Float]; park_at_cancel must be True
+## !!! Caution [firmware_retraction] must be defined in the printer.cfg if you set use_fw_retract: True !!!
+variable_use_fw_retract   : True ; use fw_retraction instead of the manual version [True/False]
+variable_idle_timeout     : 0     ; time in sec until idle_timeout kicks in. Value 0 means that no value will be set or restored
+#variable_runout_sensor    : "encoder_sensor"    ; If a sensor is defined, it will be used to cancel the execution of RESUME in case no filament is detected.
+##                                   Specify the config name of the runout sensor e.g "filament_switch_sensor runout". Hint use the same as in your printer.cfg
+## !!! Custom macros, please use with care and review the section of the corresponding macro.
+## These macros are for simple operations like setting a status LED. Please make sure your macro does not interfere with the basic macro functions.
+## Only  single line commands are supported, please create a macro if you need more than one command.
+#variable_user_pause_macro : ""    ; Everything insight the "" will be executed after the klipper base pause (PAUSE_BASE) function
+#variable_user_resume_macro: ""    ; Everything insight the "" will be executed before the klipper base resume (RESUME_BASE) function
+#variable_user_cancel_macro: ""    ; Everything insight the "" will be executed before the klipper base cancel (CANCEL_PRINT_BASE) function
+gcode:
+
+########################
+########################
+### Printer
+########################
+
+[printer]
+kinematics: corexy
+max_velocity: 1000
+max_accel: 60000
+minimum_cruise_ratio: 0.7
+max_z_velocity: 40
+max_z_accel: 2000
+square_corner_velocity: 20
+
+#[input_shaper]
+#shaper_freq_x: 132.6
+#shaper_type_x: ei
+#damping_ratio_x: 0.043
+#shaper_freq_y: 92.0
+#shaper_type_y: ei
+#damping_ratio_y: 0.041
+
+[mcu host]
+serial: /tmp/klipper_host_mcu
+
+
+[mcu]
+serial: /dev/serial/by-id/usb-Klipper_stm32h723xx_32001F000F51313531383332-if00
+
+
+[mcu cartographer] 
+serial: /dev/serial/by-id/usb-Cartographer_stm32g431xx_63003D000D50315447313620-if00
+restart_method: command
+
+[temperature_sensor Octopus]
+sensor_type: temperature_mcu
+max_temp: 100
+
+[temperature_sensor raspberry_pi_4B]
+sensor_type: temperature_host
+min_temp: 10
+max_temp: 100 
+
+
+
+########################
+########################
+### Extruder
+########################
+[extruder]  ##M6
+step_pin: PG15
+dir_pin: !PB3
+enable_pin: !PD5
+microsteps: 16
+full_steps_per_rotation: 200
+rotation_distance: 22.220
+Gear_ratio: 50:10
+nozzle_diameter: 0.400
+filament_diameter: 1.750
+heater_pin: PA0
+max_power: 0.9
+#control: pid
+#pid_Kp: 23.216 
+#pid_Ki: 1.629 
+#pid_Kd: 82.712
+min_temp: 0
+max_temp: 450
+
+sensor_type: PT1000
+sensor_pin: PB0
+pullup_resistor: 2200
+
+max_extrude_only_distance: 250.0
+max_extrude_cross_section: 250
+#pressure_advance: 0.02
+pressure_advance_smooth_time: 0.03
+
+[tmc2209 extruder]
+uart_pin: PG9
+run_current: 0.7
+stealthchop_threshold: 0
+
+[firmware_retraction]
+retract_length: 0.3
+retract_speed: 85
+unretract_speed: 85
+
+[filament_switch_sensor RUNOUT]
+switch_pin: ^!PB13 # Y_MIIN
+pause_on_runout: true
+runout_gcode:
+ PAUSE # [pause_resume] is required in printer.cfg
+ M117 Filament switch runout
+insert_gcode:
+ M117 Filament switch inserted
+
+ 
+[filament_motion_sensor encoder_sensor]
+switch_pin: ^PB14 #X_MIN
+detection_length: 7 # accuracy of motion sensor 2.88mm
+extruder: extruder
+pause_on_runout: True
+runout_gcode:
+  M117 Filament encoder runout
+  PAUSE
+insert_gcode:
+ M117 Filament encoder inserted
+
+
+[gcode_macro SFS_ENABLE]
+gcode:
+    SET_FILAMENT_SENSOR SENSOR=encoder_sensor ENABLE=1
+
+[gcode_macro SFS_DISABLE]
+gcode:
+    SET_FILAMENT_SENSOR SENSOR=encoder_sensor ENABLE=0
+
+###############################
+# STEPPER
+###############################
+
+
+###############################
+# TMC Autotune
+###############################
+
+#[autotune_tmc stepper_x]
+#motor: ldo-42sth60-3004mah
+#tuning_goal: performance
+#voltage: 48
+
+#[autotune_tmc stepper_x1]
+#motor: ldo-42sth60-3004mah
+#tuning_goal: performance
+#voltage: 48
+
+#[autotune_tmc stepper_y]
+#motor: ldo-42sth60-3004mah
+#tuning_goal: performance
+#voltage: 48
+
+#[autotune_tmc stepper_y1]
+#motor: ldo-42sth60-3004mah
+#tuning_goal: performance
+#voltage: 48
+
+#[autotune_tmc stepper_z]
+#motor: ldo-42sth48-2504ac
+#tuning_goal: performance
+
+#[autotune_tmc extruder]
+#motor: ldo-36sth17-1004ahg ; ldo-36sth20-1004ahg
+
+
+
+
+
+########################
+########################
+# Stepper x
+########################
+
+# Motor1 front left
+[stepper_x] #x
+step_pin: PC13
+dir_pin: !PC14
+enable_pin: !PE6
+microsteps: 16
+rotation_distance: 40
+full_steps_per_rotation: 400
+endstop_pin: !PF2
+position_endstop: 0
+position_max: 226
+homing_speed: 60
+homing_retract_dist: 0
+
+
+
+[tmc5160 stepper_x]
+cs_pin: PG14
+spi_bus: spi4
+sense_resistor: 0.022     # default BTT 0.022
+run_current: 2.5       # max 10.6A 
+stealthchop_threshold: 0
+interpolate: false
+#driver_TBL: 0
+#driver_TOFF: 2
+#driver_HSTRT: 5
+#driver_HEND: 4
+
+# Motor2 back right
+[stepper_x1] #x1
+step_pin: PE4
+dir_pin: PE5
+enable_pin: !PE3
+microsteps: 16
+rotation_distance: 40
+full_steps_per_rotation: 400
+
+
+[tmc5160 stepper_x1]
+cs_pin: PG13
+spi_bus: spi4
+sense_resistor: 0.022     # default BTT 0.022
+run_current: 2.5          # max 10.6A 
+stealthchop_threshold: 0
+interpolate: false
+#driver_TBL: 0
+#driver_TOFF: 2
+#driver_HSTRT: 5
+#driver_HEND: 4
+
+########################
+########################
+# Stepper Y
+########################
+# Motor3 front right
+[stepper_y] #y
+step_pin: PE1
+dir_pin: PE0
+enable_pin: !PE2
+microsteps: 16
+rotation_distance: 40
+full_steps_per_rotation: 400
+endstop_pin: PF0 
+position_endstop: 0
+position_max: 226
+homing_speed: 60
+homing_retract_dist: 0
+
+
+[tmc5160 stepper_y]
+cs_pin: PG12
+spi_bus: spi4
+sense_resistor: 0.022     # default BTT 0.022
+run_current: 2.5       # max 10.6A 
+stealthchop_threshold: 0
+interpolate: false
+#driver_TBL: 1
+#driver_TOFF: 5
+#driver_HSTRT: 1
+#driver_HEND: 4
+
+# Motor4 back left
+[stepper_y1] #y1
+step_pin: PB8
+dir_pin: !PB9
+enable_pin: !PB7
+microsteps: 16
+rotation_distance: 40
+full_steps_per_rotation: 400
+
+[tmc5160 stepper_y1]
+cs_pin: PG11
+spi_bus: spi4
+sense_resistor: 0.022     # default BTT 0.022
+run_current: 2.5        # max 10.6A 
+stealthchop_threshold: 0
+interpolate: false
+#driver_TBL: 1
+#driver_TOFF: 5
+#driver_HSTRT: 1
+#driver_HEND: 4
+
+###############################
+# STEPPER Z
+###############################
+
+# Motor5 left
+[stepper_z]
+step_pin: PB5
+dir_pin: PB4
+enable_pin: !PB6
+microsteps: 32
+rotation_distance: 4
+#gear_ratio: 40:20
+full_steps_per_rotation: 200
+endstop_pin: probe:z_virtual_endstop
+homing_retract_dist: 0
+position_min: 0
+position_max: 200
+homing_speed: 10
+second_homing_speed: 5
+
+[tmc2209 stepper_z]
+uart_pin: PG10
+run_current: 1.2
+#sense_resistor: 0.05
+interpolate: False
+stealthchop_threshold: 0
+
+########################
+########################
+### Heatbed
+########################
+
+[heater_bed]
+heater_pin: PF5
+sensor_pin: PB1 # TB
+sensor_type: ATC Semitec 104GT-2
+min_temp: 0
+max_temp: 130
+#control: pid
+#pid_kp: 54.122
+#pid_ki: 2.864
+#pid_kd: 255.727
+max_power: 0.7
+
+########################
+########################
+### Cartographer
+########################
+[cartographer]
+mcu: cartographer
+x_offset: 0 # This is the offset of your probe from the nozzle tip, to the centre of the coil.
+y_offset: 25 # This is the offset of your probe from the nozzle tip, to the centre of the coil.
+verbose: yes # For extra output
+
+[cartographer touch]
+samples: 3
+max_samples: 10
+#retract_distance: 5
+#EXPERIMENTAL_home_random_radius: 5
+
+
+[temperature_sensor Cartographer_MCU]
+sensor_type: temperature_mcu
+sensor_mcu: cartographer
+min_temp: 0
+max_temp: 105
+
+[adxl345]
+cs_pin: cartographer:PA0
+spi_bus: spi1
+
+[resonance_tester]
+accel_chip: adxl345
+probe_points:
+    113, 113, 10
+########################
+########################
+### Bed Mesh
+########################
+[safe_z_home]
+home_xy_position: 113,113
+speed: 200
+z_hop: 5
+z_hop_speed: 20.0
+
+#[homing_override]
+#axes: xyz
+#gcode:
+# {% set home_all = 'X' not in params and 'Y' not in params and 'Z' not in params %}#
+#
+# SET_KINEMATIC_POSITION Z=1
+# G1 Z10 F1200
+#
+# {% if home_all or 'Y' in params %}
+#   G28 Y
+# {% endif %}
+# 
+# {% if home_all or 'X' in params %}
+#   G28 X
+# {% endif %}#
+#
+# {% if home_all or 'Z' in params %}
+#   G90
+#   G0 X{printer.toolhead.axis_maximum.x / 2} Y{printer.toolhead.axis_maximum.y / 2} F8000
+#   
+#   G28 Z
+#   G90
+#   G1 Z20 F1500
+# {% endif %}    
+#   _SET_NOZZLE_CLEANER_ENABLED ENABLED=1
+
+[bed_mesh]
+zero_reference_position: 113,113
+speed: 300
+horizontal_move_z: 3
+mesh_min: 22, 26
+mesh_max: 212, 197
+probe_count: 30, 30
+adaptive_margin: 10
+mesh_pps: 0,0 
+
+[screws_tilt_adjust]
+screw1: 27, 0
+screw1_name: vorne links
+screw2: 27, 175
+screw2_name: hinten links
+screw3: 196, 175
+screw3_name: hinten rechts
+screw4: 196, 0
+screw4_name: vorne rechts
+speed: 200
+horizontal_move_z: 5
+screw_thread: CW-M4
+
+[axis_twist_compensation]
+speed: 100
+horizontal_move_z: 5
+calibrate_start_x: 20
+calibrate_end_x: 190
+calibrate_y: 115
+calibrate_start_y: 28
+calibrate_end_y: 170
+calibrate_x: 115
+
+[led caselight]
+white_pin: PA4
+cycle_time: 0.001
+initial_WHITE: 0.06
+
+[gcode_macro Caselight_on]
+gcode:  SET_PIN PIN=caselight VALUE=0.5
+
+[gcode_macro Caselight_off]
+gcode:  SET_PIN PIN=caselight VALUE=0
+
+
+########################
+########################
+# FANS
+########################
+
+#[heater_fan hotend_fan] 
+#pin: PA6
+#heater: extruder
+#heater_temp: 50.0
+
+[controller_fan Octopus]  #FAN 5
+stepper: stepper_x,stepper_y,stepper_z
+pin: PA1
+tachometer_pin: PC3
+#cycle_time: 0.00001
+shutdown_speed: 0
+idle_timeout: 180
+
+########################
+########################
+# CPAP
+########################
+
+[fan]
+
+pin: PA3
+max_power: 0.9 
+shutdown_speed: 0 
+cycle_time: 0.005 
+hardware_pwm: False 
+kick_start_time: 0.100 
+off_below: 0.1 
+
+
+########################
+########################
+# AUX Fans
+########################
+
+# this is the auxiliary fan
+[fan_generic RSCS]
+pin: PA5
+#max_power: 1.0
+cycle_time: 0.1  #0.0001
+hardware_pwm: false
+kick_start_time: 0.2
+off_below: 0.05
+
+##  Chamber temp / Exhaust fan (12V Fan 3 wire)
+
+#[temperature_fan Exhaust_fan] # FAN 4
+#pin: PA1
+#tachometer_pin: PC3
+#max_power: 1.0
+#shutdown_speed: 0.1
+#cycle_time: 0.0005     #2 kHz PWM signal
+#hardware_pwm: true
+#kick_start_time: 5.0
+#sensor_type: ATC Semitec 104GT-2
+#sensor_pin: PB0
+#min_temp: 0
+#max_temp: 70
+#target_temp: 50
+#control: watermark
+#gcode_id: C
+
+#Macro inspired by klipper-github issue https://github.com/Klipper3d/klipper/issues/2174
+[gcode_macro M106]
+rename_existing: G106
+gcode:
+    {% set P = params.P | default(0) | int %}
+    {% set S = params.S | default(255) | int %}
+    {% if P == 0 %}
+        G106 S{S}
+    {% else %}
+        {% set fan = "RSCS" if P == 2 else "Exhaust_fan" %}
+        SET_FAN_SPEED FAN={fan} SPEED={S / 255}
+    {% endif %}
+
+[gcode_macro M107]
+rename_existing: G107
+gcode:
+    {% set fan = params.P|default(1)|int %}
+	{% if fan == 2 %}
+		SET_FAN_SPEED FAN=RSCS SPEED=0 
+	{% else %}
+	  SET_FAN_SPEED FAN=RSCS SPEED=0  
+	  G107
+	{% endif %}
+
+
+########################
+########################
+# Watercooling
+########################
+[heater_fan pump]
+pin: PF8      #FAN5
+tachometer_pin: PC1
+shutdown_speed: 1.0    # Pump runs at 100% if Klipper crashes (Safety!)
+fan_speed: 1.0
+cycle_time: 0.01
+heater: extruder
+heater_temp: 35
+
+[heater_fan hotend_fan]
+pin: PA2   #FAN6
+tachometer_pin: PC2
+fan_speed: 1.0
+cycle_time: 0.01
+heater: extruder
+heater_temp: 35
+shutdown_speed: 1.0  
+
+
+#[neopixel my_neopixel_1]
+#pin: PE10
+
+#[neopixel my_neopixel_2]
+#pin: PE9
+
+#*# <---------------------- SAVE_CONFIG ---------------------->
+#*# DO NOT EDIT THIS BLOCK OR BELOW. The contents are auto-generated.
+#*#
+#*# [heater_bed]
+#*# pid_kp = 45.826
+#*# pid_ki = 2.122
+#*# pid_kd = 247.461
+#*# control = pid
+#*#
+#*# [extruder]
+#*# control = pid
+#*# pid_kp = 33.961
+#*# pid_ki = 3.904
+#*# pid_kd = 73.865
+#*#
+#*# [cartographer scan_model default]
+#*# coefficients = 1.4707782948930819,1.9640781807248857,0.843278975514287,0.2923388439444327,0.45481178413215084,0.8205078076927395,-0.2774977046586258,-0.8715658103041902,0.3093745538433361,0.49631248213455237
+#*# domain = 3.299255755824406e-07,3.4455645021934685e-07
+#*# z_offset = 0
+#*# reference_temperature = 23.76
+#*# software_version = 1.6.0
+#*# mcu_version = CARTOGRAPHER v4 6.2.0
+#*#
+#*# [cartographer touch_model default]
+#*# threshold = 2250
+#*# speed = 2.0
+#*# z_offset = -0.405
+#*# software_version = 1.6.0
+#*# mcu_version = CARTOGRAPHER v4 6.2.0
+#*#
